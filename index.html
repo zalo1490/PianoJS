@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Piano JS</title>
+    <link rel="icon" type="image/png" href="piano-de-cola.png">
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+
+  <div class="piano-container">
+    <div class="controls">
+      <h1>Piano JS</h1>
+      
+      <select id="oscillator-type">
+        <option value="sine">Seno (Suave)</option>
+        <option value="square">Cuadrada (Retro)</option>
+        <option value="sawtooth">Diente de sierra (Fuerte)</option>
+        <option value="triangle">Triángulo (Flauta)</option>
+      </select>
+    </div>
+
+    <div id="piano" class="piano">
+      <div class="key white" data-note="261.63" data-key="A"><span>A</span></div>
+      <div class="key black" data-note="277.18" data-key="W"><span>W</span></div>
+      <div class="key white" data-note="293.66" data-key="S"><span>S</span></div>
+      <div class="key black" data-note="311.13" data-key="E"><span>E</span></div>
+      <div class="key white" data-note="329.63" data-key="D"><span>D</span></div>
+      <div class="key white" data-note="349.23" data-key="F"><span>F</span></div>
+      <div class="key black" data-note="369.99" data-key="T"><span>T</span></div>
+      <div class="key white" data-note="392.00" data-key="G"><span>G</span></div>
+      <div class="key black" data-note="415.30" data-key="Y"><span>Y</span></div>
+      <div class="key white" data-note="440.00" data-key="H"><span>H</span></div>
+      <div class="key black" data-note="466.16" data-key="U"><span>U</span></div>
+      <div class="key white" data-note="493.88" data-key="J"><span>J</span></div>
+    </div>
+  </div>
+
+  <div class="recorder-controls">
+    <button id="record-btn">🔴 Grabar</button>
+    <button id="play-recorded-btn" disabled>▶️ Reproducir</button>
+  </div>
+  
+
+  <script src="script.js"></script>
+</body>
+</html>

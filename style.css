@@ -1,0 +1,124 @@
+/* Importar fuentes modernas */
+@import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@300;500&display=swap');
+
+:root {
+    --bg-dark: #0f172a;
+    --glass: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --neon-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    --key-color: #3b82f6; /* Color por defecto al tocar */
+}
+
+body {
+    background: radial-gradient(circle at center, var(--bg-color, #1e293b) 0%, #0f172a 100%);
+    transition: background 0.8s ease;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Inter', sans-serif;
+    color: #f8fafc;
+    overflow: hidden;
+}
+
+/* --- TÍTULO Y ENCABEZADO --- */
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+h1 {
+    font-family: 'Syncopate', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 8px;
+    font-size: 1.8rem;
+    margin: 0;
+    background: linear-gradient(to right, #fff, #64748b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* --- CONTENEDOR PRINCIPAL --- */
+.piano-container {
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    padding: 40px;
+    border-radius: 40px;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+.piano {
+    display: flex;
+    position: relative;
+    justify-content: center;
+    perspective: 1200px;
+}
+
+/* --- TECLAS --- */
+.key {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 20px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+}
+
+.white {
+    width: 60px;
+    height: 250px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #e2e8f0;
+    border-radius: 0 0 12px 12px;
+    z-index: 1;
+    color: #475569;
+}
+
+.black {
+    width: 40px;
+    height: 140px;
+    background: #020617;
+    color: #94a3b8;
+    margin-left: -20px;
+    margin-right: -20px;
+    z-index: 2;
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.4);
+}
+
+.key.playing {
+    background-color: var(--key-color) !important;
+    border-color: var(--key-color);
+    box-shadow: 0 0 40px var(--key-color), 0 0 80px var(--key-color);
+    transform: translateY(15px) rotateX(-10deg);
+    color: white;
+}
+
+/* --- CONTROLES (SELECTOR DE ONDA) --- */
+.controls {
+    display: flex;
+    align-items: center;
+}
+
+select {
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid var(--glass-border);
+    color: #94a3b8;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 10px; /* Más pequeño y proporcionado */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
