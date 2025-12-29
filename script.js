@@ -14,9 +14,18 @@ const colors = {
     "Y": "#5733FF", "H": "#BD33FF", "U": "#FF33DB", "J": "#FF3375"
 };
 
+// --- FUNCIÓN PARA REANUDAR AUDIO (Crucial para móviles) ---
+function resumeAudio() {
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+}
+
 // --- ÚNICA FUNCIÓN playNote (Sonido + Color + Grabación) ---
 function playNote(frequency, keyChar) {
     if (!frequency) return;
+
+    resumeAudio();
 
     // Lógica de Sonido
     const osc = audioCtx.createOscillator();
@@ -25,7 +34,6 @@ function playNote(frequency, keyChar) {
     osc.type = oscSelect.value;
     osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
 
-    // Efecto Sustain: el sonido desaparece suavemente
     gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
 
@@ -35,25 +43,23 @@ function playNote(frequency, keyChar) {
     osc.start();
     osc.stop(audioCtx.currentTime + 1.5);
 
-   // Lógica de Color Visual (Teclas)
+    // Lógica Visual
     const el = document.querySelector(`.key[data-key="${keyChar}"]`);
     if (el) {
         const colorValue = colors[keyChar] || "#f1c40f";
         el.style.setProperty('--key-color', colorValue);
-        
-        // --- NUEVA LÍNEA: Cambia el color del fondo ---
-        document.body.style.setProperty('--bg-color', colorValue + '33'); // '33' añade transparencia
+        document.body.style.setProperty('--bg-color', colorValue + '33'); 
         
         el.classList.add('playing');
+
+        // Limpieza de estados visuales
         setTimeout(() => {
             el.classList.remove('playing');
-            // Opcional: vuelve al color original después de un tiempo
-            setTimeout(() => {
-                if (!document.querySelector('.key.playing')) {
-                    document.body.style.setProperty('--bg-color', '#1e293b');
-                }
-            }, 1000);
-        }, 250);
+            // Solo resetear el fondo si no hay otras teclas sonando
+            if (!document.querySelector('.key.playing')) {
+                document.body.style.setProperty('--bg-color', '#1e293b');
+            }
+        }, 300);
     }
 
     // Lógica de Grabación
@@ -66,25 +72,26 @@ function playNote(frequency, keyChar) {
     }
 }
 
-// --- EVENTOS ---
+// --- EVENTOS DE INTERACCIÓN ---
 
-// Activar audio al primer clic (Solución al silencio)
-window.addEventListener('mousedown', () => {
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
-});
-
-// Eventos de Mouse
 keys.forEach(keyElement => {
-    keyElement.addEventListener('mousedown', () => {
+    // Click en PC
+    keyElement.addEventListener('mousedown', (e) => {
         const note = parseFloat(keyElement.dataset.note);
         const keyChar = keyElement.dataset.key;
         playNote(note, keyChar);
     });
+
+    // Toque en Móvil (touchstart es lo que activa el sonido en iOS/Android)
+    keyElement.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // Evita scroll y zoom al tocar las teclas
+        const note = parseFloat(keyElement.dataset.note);
+        const keyChar = keyElement.dataset.key;
+        playNote(note, keyChar);
+    }, { passive: false });
 });
 
-// Eventos de Teclado Físico
+// Teclado Físico
 window.addEventListener('keydown', (e) => {
     const keyChar = e.key.toUpperCase();
     const el = document.querySelector(`.key[data-key="${keyChar}"]`);
@@ -94,29 +101,29 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-// Lógica de Botones Grabar/Reproducir
+// --- LÓGICA DE GRABACIÓN Y REPRODUCCIÓN ---
+
 recordBtn.addEventListener('click', () => {
+    resumeAudio();
     isRecording = !isRecording;
+
     if (isRecording) {
         recordedNotes = [];
         startTime = Date.now();
         recordBtn.textContent = "⏹️ Detener";
+        recordBtn.classList.add('recording');
         playBtn.disabled = true;
     } else {
         recordBtn.textContent = "🔴 Grabar";
+        recordBtn.classList.remove('recording');
         playBtn.disabled = recordedNotes.length === 0;
     }
-    // Dentro del recordBtn.addEventListener('click', ...)
-if (isRecording) {
-    recordBtn.classList.add('recording'); // Activa la pulsación roja
-} else {
-    recordBtn.classList.remove('recording');
-}
 });
 
 playBtn.addEventListener('click', () => {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    
+    resumeAudio();
+    if (recordedNotes.length === 0) return;
+
     recordedNotes.forEach(note => {
         setTimeout(() => {
             playNote(note.freq, note.key);
