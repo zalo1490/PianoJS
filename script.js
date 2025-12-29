@@ -1,4 +1,6 @@
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+
 const keys = document.querySelectorAll('.key');
 const oscSelect = document.getElementById('oscillator-type');
 const recordBtn = document.getElementById('record-btn');
@@ -14,14 +16,18 @@ const colors = {
     "Y": "#5733FF", "H": "#BD33FF", "U": "#FF33DB", "J": "#FF3375"
 };
 
-// --- FUNCIÓN PARA REANUDAR AUDIO (Crucial para móviles) ---
+// --- MEJORA PARA MÓVILES: Desbloqueo forzado ---
 function resumeAudio() {
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
     }
 }
 
-// --- ÚNICA FUNCIÓN playNote (Sonido + Color + Grabación) ---
+// Escuchar toque en cualquier parte para activar el audio (estándar de móviles)
+window.addEventListener('touchstart', resumeAudio, { once: true });
+window.addEventListener('mousedown', resumeAudio, { once: true });
+
+// --- ÚNICA FUNCIÓN playNote ---
 function playNote(frequency, keyChar) {
     if (!frequency) return;
 
@@ -52,10 +58,8 @@ function playNote(frequency, keyChar) {
         
         el.classList.add('playing');
 
-        // Limpieza de estados visuales
         setTimeout(() => {
             el.classList.remove('playing');
-            // Solo resetear el fondo si no hay otras teclas sonando
             if (!document.querySelector('.key.playing')) {
                 document.body.style.setProperty('--bg-color', '#1e293b');
             }
@@ -82,9 +86,9 @@ keys.forEach(keyElement => {
         playNote(note, keyChar);
     });
 
-    // Toque en Móvil (touchstart es lo que activa el sonido en iOS/Android)
+    // Toque en Móvil
     keyElement.addEventListener('touchstart', (e) => {
-        e.preventDefault(); // Evita scroll y zoom al tocar las teclas
+        e.preventDefault(); 
         const note = parseFloat(keyElement.dataset.note);
         const keyChar = keyElement.dataset.key;
         playNote(note, keyChar);
