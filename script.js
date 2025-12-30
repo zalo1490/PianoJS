@@ -1,4 +1,4 @@
-const AudioContext = window.AudioContext || window.webkitAudioContext;
+// No creamos el contexto aquí arriba, solo declaramos la variable
 let audioCtx;
 
 const keys = document.querySelectorAll('.key');
@@ -16,29 +16,41 @@ const colors = {
     "Y": "#5733FF", "H": "#BD33FF", "U": "#FF33DB", "J": "#FF3375"
 };
 
-function initAudio() {
-    if (!audioCtx) audioCtx = new AudioContext();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
+// Esta función se asegura de que el audio nazca SÓLO tras un toque
+function getAudioContext() {
+    if (!audioCtx) {
+        // Creamos el contexto por primera vez
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    return audioCtx;
 }
 
 function playNote(frequency, keyChar) {
-    if (!frequency || !audioCtx) return;
+    if (!frequency) return;
 
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    // Llamamos a la función para obtener el contexto activo
+    const ctx = getAudioContext();
+    
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
 
     osc.type = oscSelect.value;
-    osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+    osc.frequency.setValueAtTime(frequency, ctx.currentTime);
 
-    gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
+    // Volumen y envolvente
+    gain.gain.setValueAtTime(0.5, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1);
 
     osc.connect(gain);
-    gain.connect(audioCtx.destination);
+    gain.connect(ctx.destination);
 
     osc.start();
-    osc.stop(audioCtx.currentTime + 1);
+    osc.stop(ctx.currentTime + 1);
 
+    // Animación visual
     const el = document.querySelector(`.key[data-key="${keyChar}"]`);
     if (el) {
         const colorValue = colors[keyChar] || "#3b82f6";
@@ -58,27 +70,27 @@ function playNote(frequency, keyChar) {
     }
 }
 
-// ASIGNACIÓN DE EVENTOS
+// EVENTOS: Usamos 'pointerdown' que es el más compatible
 keys.forEach(key => {
-    // Escuchamos pointerdown para cubrir ratón y dedo a la vez
     key.addEventListener('pointerdown', (e) => {
+        // IMPORTANTE para Chrome en iOS: evitar que el toque se pierda
         e.preventDefault();
-        initAudio();
         playNote(parseFloat(key.dataset.note), key.dataset.key);
     }, { passive: false });
 });
 
+// Teclado físico
 window.addEventListener('keydown', (e) => {
     const keyChar = e.key.toUpperCase();
     const el = document.querySelector(`.key[data-key="${keyChar}"]`);
     if (el && !e.repeat) {
-        initAudio();
         playNote(parseFloat(el.dataset.note), keyChar);
     }
 });
 
+// Grabación y Reproducción (también llaman a getAudioContext)
 recordBtn.addEventListener('click', () => {
-    initAudio();
+    getAudioContext(); 
     isRecording = !isRecording;
     recordBtn.textContent = isRecording ? "⏹️ Detener" : "🔴 Grabar";
     if (isRecording) {
@@ -91,7 +103,7 @@ recordBtn.addEventListener('click', () => {
 });
 
 playBtn.addEventListener('click', () => {
-    initAudio();
+    getAudioContext();
     recordedNotes.forEach(note => {
         setTimeout(() => playNote(note.freq, note.key), note.time);
     });
