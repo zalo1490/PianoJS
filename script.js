@@ -1,5 +1,5 @@
 const AudioContext = window.AudioContext || window.webkitAudioContext;
-let audioCtx; // Lo inicializaremos tras el primer toque
+let audioCtx;
 
 const keys = document.querySelectorAll('.key');
 const oscSelect = document.getElementById('oscillator-type');
@@ -16,14 +16,9 @@ const colors = {
     "Y": "#5733FF", "H": "#BD33FF", "U": "#FF33DB", "J": "#FF3375"
 };
 
-// Inicialización segura del audio
 function initAudio() {
-    if (!audioCtx) {
-        audioCtx = new AudioContext();
-    }
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
+    if (!audioCtx) audioCtx = new AudioContext();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
 }
 
 function playNote(frequency, keyChar) {
@@ -35,7 +30,7 @@ function playNote(frequency, keyChar) {
     osc.type = oscSelect.value;
     osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
 
-    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
 
     osc.connect(gain);
@@ -44,14 +39,18 @@ function playNote(frequency, keyChar) {
     osc.start();
     osc.stop(audioCtx.currentTime + 1);
 
-    // Animación visual
     const el = document.querySelector(`.key[data-key="${keyChar}"]`);
     if (el) {
         const colorValue = colors[keyChar] || "#3b82f6";
         el.style.setProperty('--key-color', colorValue);
         document.body.style.setProperty('--bg-color', colorValue + '33'); 
         el.classList.add('playing');
-        setTimeout(() => el.classList.remove('playing'), 200);
+        setTimeout(() => {
+            el.classList.remove('playing');
+            if (!document.querySelector('.key.playing')) {
+                document.body.style.setProperty('--bg-color', '#1e293b');
+            }
+        }, 300);
     }
 
     if (isRecording) {
@@ -59,20 +58,16 @@ function playNote(frequency, keyChar) {
     }
 }
 
-// EVENTOS DE TECLAS (Móvil y PC unidos)
-keys.forEach(keyElement => {
-    // Usamos pointerdown porque detecta touch y mouse por igual
-    keyElement.addEventListener('pointerdown', (e) => {
-        e.preventDefault(); // Evita scroll/zoom
-        initAudio(); // Activa audio en cada toque por si acaso
-        
-        const note = parseFloat(keyElement.dataset.note);
-        const keyChar = keyElement.dataset.key;
-        playNote(note, keyChar);
+// ASIGNACIÓN DE EVENTOS
+keys.forEach(key => {
+    // Escuchamos pointerdown para cubrir ratón y dedo a la vez
+    key.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        initAudio();
+        playNote(parseFloat(key.dataset.note), key.dataset.key);
     }, { passive: false });
 });
 
-// Teclado físico para PC
 window.addEventListener('keydown', (e) => {
     const keyChar = e.key.toUpperCase();
     const el = document.querySelector(`.key[data-key="${keyChar}"]`);
@@ -82,22 +77,19 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-// Grabación
-recordBtn.addEventListener('click', (e) => {
+recordBtn.addEventListener('click', () => {
     initAudio();
     isRecording = !isRecording;
+    recordBtn.textContent = isRecording ? "⏹️ Detener" : "🔴 Grabar";
     if (isRecording) {
         recordedNotes = [];
         startTime = Date.now();
-        recordBtn.textContent = "⏹️ Detener";
         playBtn.disabled = true;
     } else {
-        recordBtn.textContent = "🔴 Grabar";
         playBtn.disabled = recordedNotes.length === 0;
     }
 });
 
-// Reproducción
 playBtn.addEventListener('click', () => {
     initAudio();
     recordedNotes.forEach(note => {
