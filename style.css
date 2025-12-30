@@ -4,11 +4,14 @@
     --bg-dark: #0f172a;
     --glass: rgba(255, 255, 255, 0.03);
     --glass-border: rgba(255, 255, 255, 0.1);
+    --neon-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
     --key-color: #3b82f6;
 }
 
 body {
+    /* Recuperamos tu gradiente original */
     background: radial-gradient(circle at center, var(--bg-color, #1e293b) 0%, #0f172a 100%);
+    background-attachment: fixed; /* Mantiene el fondo quieto al tocar */
     transition: background 0.8s ease;
     margin: 0;
     height: 100vh;
@@ -18,23 +21,35 @@ body {
     align-items: center;
     font-family: 'Inter', sans-serif;
     color: #f8fafc;
+    
+    /* Fix para evitar scroll accidental sin romper el fondo */
     overflow: hidden;
-    /* Evita que la pantalla rebote en iOS */
-    position: fixed;
-    width: 100%;
     touch-action: none;
 }
 
+/* --- TÍTULO Y ENCABEZADO --- */
+h1 {
+    font-family: 'Syncopate', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 8px;
+    font-size: 1.8rem;
+    margin: 0;
+    background: linear-gradient(to right, #fff, #64748b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* --- CONTENEDOR PRINCIPAL --- */
 .piano-container {
     background: var(--glass);
     backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px); /* Soporte para Safari iOS */
     border: 1px solid var(--glass-border);
-    padding: 30px;
-    border-radius: 30px;
+    padding: 40px;
+    border-radius: 40px;
     box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
-    z-index: 5;
 }
 
 .piano {
@@ -42,10 +57,10 @@ body {
     position: relative;
     justify-content: center;
     perspective: 1200px;
-    /* IMPORTANTE: permite que los toques pasen a las teclas sin scroll */
-    touch-action: none; 
+    touch-action: none; /* Crucial para que el dedo no mueva la pantalla */
 }
 
+/* --- TECLAS --- */
 .key {
     display: flex;
     align-items: flex-end;
@@ -54,15 +69,11 @@ body {
     font-weight: 500;
     font-size: 14px;
     cursor: pointer;
-    transition: all 0.1s ease;
-    
-    /* CONTROL DE TOQUE DEFINITIVO */
+    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
     user-select: none;
     -webkit-user-select: none;
-    touch-action: none; 
+    touch-action: none;
     -webkit-tap-highlight-color: transparent;
-    pointer-events: auto; /* Asegura que la tecla reciba el evento */
-    z-index: 10;
 }
 
 .white {
@@ -71,6 +82,7 @@ body {
     background: rgba(255, 255, 255, 0.95);
     border: 1px solid #e2e8f0;
     border-radius: 0 0 12px 12px;
+    z-index: 1;
     color: #475569;
 }
 
@@ -81,14 +93,16 @@ body {
     color: #94a3b8;
     margin-left: -20px;
     margin-right: -20px;
-    z-index: 20; /* Por encima de las blancas */
+    z-index: 2;
     border-radius: 0 0 6px 6px;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.4);
 }
 
 .key.playing {
     background-color: var(--key-color) !important;
-    box-shadow: 0 0 30px var(--key-color);
-    transform: translateY(10px) rotateX(-5deg);
+    border-color: var(--key-color);
+    box-shadow: 0 0 40px var(--key-color), 0 0 80px var(--key-color);
+    transform: translateY(15px) rotateX(-10deg);
     color: white;
 }
 
@@ -96,19 +110,45 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
 }
 
-h1 {
-    font-family: 'Syncopate', sans-serif;
-    font-size: 1.2rem;
-    letter-spacing: 4px;
-    margin: 0;
+select {
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid var(--glass-border);
+    color: #94a3b8;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-/* Ajuste para pantallas pequeñas */
+/* --- GRABACIÓN --- */
+.recorder-controls {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+}
+
+button {
+    padding: 10px 20px;
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass);
+    color: white;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: 0.3s;
+}
+
+button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* MEDIA QUERY PARA MÓVILES (Para que no se corte el piano) */
 @media (max-width: 700px) {
     .white { width: 45px; height: 180px; }
     .black { width: 30px; height: 110px; margin-left: -15px; margin-right: -15px; }
-    .piano-container { padding: 15px; }
+    h1 { font-size: 1.2rem; letter-spacing: 4px; }
+    .piano-container { padding: 20px; border-radius: 20px; }
 }
